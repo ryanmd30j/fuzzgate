@@ -1,0 +1,20 @@
+name: fuzzgate
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show environment
+        run: |
+          echo "Pipeline is running."
+          clang --version
+          
