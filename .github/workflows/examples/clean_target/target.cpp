@@ -2,11 +2,10 @@
 #include <cstddef>
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
-    // Clean target: Safely parses inputs without memory corruption
-    if (Size >= 4 && Data[0] == 'S' && Data[1] == 'A' && Data[2] == 'F' && Data[3] == 'E') {
-        // Safe operation
-        int x = 42;
-        (void)x;
+    if (Size > 0 && Data[0] == 'B') {
+        volatile char *ptr = new char[5];
+        ptr[10] = 'X'; // Out-of-bounds write (Heap Buffer Overflow)
+        delete[] ptr;
     }
     return 0;
 }
