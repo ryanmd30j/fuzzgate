@@ -8,13 +8,25 @@ on:
 jobs:
   fuzz:
     runs-on: ubuntu-latest
+    timeout-minutes: 5 # Infrastructural backstop
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Show environment
+      - name: Set up Clang & LLVM
         run: |
-          echo "Pipeline is running."
-          clang --version
-          
+          sudo apt-get update
+          sudo apt-get install -y clang llvm python3
+
+      - name: Compile Target with Sanitizers
+        run: |
+          clang++ -g -O1 -fsanitize=fuzzer,address \
+            examples/vulnerable_target/target.cpp \
+            -o examples/vulnerable_target/fuzz_target
+
+      - name: Run Bounded Fuzzing Loop (60s Budget)
+        run: |
+          python3 src/fuzz_wrapper.py \
+            --target=./examples/vulnerable_target/fuzz_target \
+            --timeout=60
