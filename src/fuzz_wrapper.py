@@ -14,6 +14,8 @@ def run_bounded_fuzzing(target, timeout_seconds):
 
     # Command executing libFuzzer with native max_total_time flag
     cmd = [target, f"-max_total_time={timeout_seconds}"]
+    if os.path.exists("corpus"):
+        cmd.append("corpus")
 
     try:
         # Execute sub-process with Python wrapper timeout as safety net
