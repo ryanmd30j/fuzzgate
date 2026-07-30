@@ -1,0 +1,15 @@
+version: "1.0"
+global_timeout: 60 # Default time budget in seconds (R.1)
+
+targets:
+  - name: "vulnerable_target"
+    path: "examples/vulnerable_target/fuzz_target"
+    source: "examples/vulnerable_target/target.cpp"
+    timeout: 60
+    fail_on_crash: true
+
+  - name: "clean_target"
+    path: "examples/clean_target/fuzz_target"
+    source: "examples/clean_target/target.cpp"
+    timeout: 60
+    fail_on_crash: true

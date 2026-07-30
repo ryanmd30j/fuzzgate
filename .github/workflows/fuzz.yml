@@ -6,9 +6,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  fuzz:
+  fuzz-matrix:
+    name: Parallel Fuzzing Target (${{ matrix.target_name }})
     runs-on: ubuntu-latest
-    timeout-minutes: 5 # Infrastructural backstop
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false # Lets clean_target finish even if vulnerable_target fails
+      matrix:
+        include:
+          - target_name: "vulnerable_target"
+            source_path: "examples/vulnerable_target/target.cpp"
+            binary_path: "examples/vulnerable_target/fuzz_target"
+          - target_name: "clean_target"
+            source_path: "examples/clean_target/target.cpp"
+            binary_path: "examples/clean_target/fuzz_target"
 
     steps:
       - name: Check out repository
@@ -19,14 +30,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y clang llvm python3
 
-      - name: Compile Target with Sanitizers
+      - name: Compile Target (${{ matrix.target_name }})
         run: |
           clang++ -g -O0 -fsanitize=fuzzer,address \
-            examples/vulnerable_target/target.cpp \
-            -o examples/vulnerable_target/fuzz_target
+            ${{ matrix.source_path }} \
+            -o ${{ matrix.binary_path }}
 
-      - name: Run Bounded Fuzzing Loop (60s Budget)
+      - name: Run Bounded Fuzzing Loop
         run: |
           python3 src/fuzz_wrapper.py \
-            --target=./examples/vulnerable_target/fuzz_target \
+            --target=./${{ matrix.binary_path }} \
             --timeout=60
