@@ -21,7 +21,7 @@ jobs:
 
       - name: Compile Target with Sanitizers
         run: |
-          clang++ -g -O1 -fsanitize=fuzzer,address \
+          clang++ -g -O0 -fsanitize=fuzzer,address \
             examples/vulnerable_target/target.cpp \
             -o examples/vulnerable_target/fuzz_target
 
