@@ -13,7 +13,15 @@ def run_bounded_fuzzing(target, timeout_seconds):
     print(f"[+] Enforcing Time Budget: {timeout_seconds} seconds")
 
     cmd = [target, f"-max_total_time={timeout_seconds}"]
-    if os.path.exists("corpus"):
+    
+    # Check if a target-specific corpus directory exists in the target's folder
+    target_dir = os.path.dirname(target)
+    target_corpus = os.path.join(target_dir, "corpus")
+    
+    if os.path.exists(target_corpus):
+        print(f"[+] Using target corpus directory: {target_corpus}")
+        cmd.append(target_corpus)
+    elif os.path.exists("corpus"):
         cmd.append("corpus")
 
     try:
