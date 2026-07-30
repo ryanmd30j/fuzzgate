@@ -26,19 +26,20 @@ def run_bounded_fuzzing(target, timeout_seconds):
             text=True
         )
         
-        # Buffer timeout gives libFuzzer 5 extra seconds to wrap up cleanly
+       # Wait for process completion or timeout
         stdout, stderr = process.communicate(timeout=timeout_seconds + 5)
         
-        # If libFuzzer / ASan caught a crash/defect, it exits with non-zero code
-        if process.returncode != 0:
-            print("\n[!] CRASH DETECTED OR VULNERABILITY FOUND!", file=sys.stderr)
+        # libFuzzer prints "ERROR: AddressSanitizer" or "SUMMARY: AddressSanitizer" on crashes
+        if "AddressSanitizer" in stderr or "ERROR:" in stderr or process.returncode != 0:
+            print("\n[!] CRASH DETECTED / VULNERABILITY FOUND!", file=sys.stderr)
             print("=================== STACK TRACE ===================", file=sys.stderr)
             print(stderr, file=sys.stderr)
-            sys.exit(1) # Fail the build gate
+            sys.exit(1) # Break the build gate
             
         print("\n[+] Bounded campaign finished cleanly: No crashes detected within time limit.")
         sys.exit(0)
 
+        
     except subprocess.TimeoutExpired:
         print("\n[!] Time Budget Reached: Gracefully terminating fuzzer...")
         process.terminate()
