@@ -6,5 +6,5 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
         volatile int dummy = 1;
         (void)dummy;
     }
-    return 0;
-}
+    return 0; 
+}// Forced hash change for controlled baseline run
