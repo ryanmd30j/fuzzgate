@@ -1,0 +1,15 @@
+# Compiled binaries
+**/fuzz_target
+*.o
+*.a
+*.so
+
+# Local crash artifacts & fuzzing state
+crash-*
+leak-*
+timeout-*
+.fuzz_cache/
+
+# Python cache
+__pycache__/
+*.pyc
