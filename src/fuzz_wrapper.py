@@ -4,16 +4,19 @@ import sys
 import argparse
 import os
 from target_select import check_target_changed
+from report_parser import parse_asan_log, append_to_github_step_summary
 
 def run_bounded_fuzzing(target, timeout_seconds, skip_unchanged=True):
     if not os.path.exists(target):
         print(f"[-] Error: Target binary '{target}' not found.", file=sys.stderr)
         sys.exit(1)
 
+    target_name = os.path.basename(target)
+
     # R.5 Target Selection Check
     if skip_unchanged and not check_target_changed(target):
         print(f"[+] SKIPPING FUZZING: Target '{target}' is identical to previous build.")
-        sys.exit(0) # Skip cleanly without failing the build gate
+        sys.exit(0)
 
     print(f"[+] Launching fuzzgate Bounded Fuzzer: {target}")
     print(f"[+] Enforcing Time Budget: {timeout_seconds} seconds")
@@ -40,7 +43,12 @@ def run_bounded_fuzzing(target, timeout_seconds, skip_unchanged=True):
         print(result.stderr, file=sys.stderr)
 
         if result.returncode != 0 or "ERROR: AddressSanitizer" in result.stderr or "SUMMARY:" in result.stderr:
-            print("\n[!] BUILD GATE FAILED: Vulnerability / Crash Detected by ASan!", file=sys.stderr)
+            print("\n[!] BUILD GATE FAILED: Vulnerability Detected by ASan!", file=sys.stderr)
+            
+            # Generate and post Actionable Markdown Report (R.7)
+            md_report = parse_asan_log(result.stderr, target_name)
+            append_to_github_step_summary(md_report)
+            
             sys.exit(1)
 
         print("\n[+] Campaign finished cleanly: No crashes detected within time limit.")
