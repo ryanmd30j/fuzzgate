@@ -29,4 +29,4 @@ fuzzgate/
 │   ├── target_select.py    # SHA-256 target change detection engine
 │   └── report_parser.py    # ASan log parser & GitHub Step Summary generator
 ├── fuzz-config.yml         # Declarative YAML configuration
-└── README.md
+└── README.md<!-- Controlled experiment Run B trigger -->
