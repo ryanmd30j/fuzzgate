@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     strategy:
-      fail-fast: false # Lets clean_target finish even if vulnerable_target fails
+      fail-fast: false
       matrix:
         include:
           - target_name: "vulnerable_target"
@@ -25,6 +25,16 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Cache Hash & Corpus State (R.3 & R.5)
+        uses: actions/cache@v4
+        with:
+          path: |
+            .fuzz_cache
+            examples/${{ matrix.target_name }}/corpus
+          key: ${{ runner.os }}-fuzz-${{ matrix.target_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-fuzz-${{ matrix.target_name }}-
+
       - name: Set up Clang & LLVM
         run: |
           sudo apt-get update
@@ -36,8 +46,9 @@ jobs:
             ${{ matrix.source_path }} \
             -o ${{ matrix.binary_path }}
 
-      - name: Run Bounded Fuzzing Loop
+      - name: Run Bounded Fuzzing Loop with Target Selection
         run: |
           python3 src/fuzz_wrapper.py \
             --target=./${{ matrix.binary_path }} \
-            --timeout=60
+            --timeout=60 \
+            --skip-unchanged
