@@ -35,10 +35,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-fuzz-${{ matrix.target_name }}-
 
-      - name: Set up Clang & LLVM
+      - name: Set up Clang, LLVM & Python Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang llvm python3
+          sudo apt-get install -y clang llvm python3 python3-pip
+          pip3 install pyyaml
 
       - name: Compile Target (${{ matrix.target_name }})
         run: |
@@ -50,5 +51,13 @@ jobs:
         run: |
           python3 src/fuzz_wrapper.py \
             --target=./${{ matrix.binary_path }} \
-            --timeout=60 \
+            --config=fuzz-config.yml \
             --skip-unchanged
+
+      - name: Upload Crash Artifacts on Failure (R.7)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crash-reproducers-${{ matrix.target_name }}
+          path: crash-*
+          if-no-files-found: ignore
